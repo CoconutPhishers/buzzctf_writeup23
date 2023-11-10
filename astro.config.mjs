@@ -19,8 +19,8 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: 'Buzz Overflow 2023',
-          autogenerate: { directory: 'aoc2022'}
+          label: 'BuzzCTF',
+          autogenerate: { directory: 'buzzctf'}
         },
       ],
       customCss: ['/src/assets/theme.css']
