@@ -4,17 +4,17 @@ import markdoc from '@astrojs/markdoc';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://threadsnappers.github.io',
-  base: '/advent-of-code-kotlin/',
+  site: 'https://the-coder-kishor.github.io',
+  base: '/buzzctf_writeup/',
   integrations: [
     markdoc(),
     starlight({
       title: 'BuzzCTF',
       editLink: {
-        baseUrl: 'https://github.com/Threadsnappers/advent-of-code-kotlin/edit/main/',
+        baseUrl: 'https://github.com/The-Coder-Kishor/buzzctf_writeup/edit/main/',
       },
       social: {
-        github: 'https://github.com/Threadsnappers/advent-of-code-kotlin',
+        github: 'https://github.com/The-Coder-Kishor',
         discord: 'https://discord.gg/NuKDmRUPRm'
       },
       sidebar: [
