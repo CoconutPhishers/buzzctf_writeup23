@@ -1,6 +1,6 @@
 ---
-title: Day 2 - Rock Paper Scissors ✂️
-description: A solution to Day 2
+title: Forensics
+description: Questions which involve a bit of digging into through various methods.
 template: doc
 ---
 In this post I'll be explaining my [day 2](https://adventofcode.com/2022/day/2)
