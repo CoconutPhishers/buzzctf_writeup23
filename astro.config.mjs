@@ -15,11 +15,11 @@ export default defineConfig({
       },
       social: {
         github: 'https://github.com/The-Coder-Kishor',
-        discord: 'https://discord.gg/NuKDmRUPRm'
+        discord: 'https://discord.gg/sppgPuRVQV'
       },
       sidebar: [
         {
-          label: 'AoC 2022',
+          label: 'Buzz Overflow 2023',
           autogenerate: { directory: 'aoc2022'}
         },
       ],
