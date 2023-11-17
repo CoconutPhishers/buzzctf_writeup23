@@ -3,6 +3,7 @@ title: OSINT
 description: As the name suggests, it is a collection of problems that require you to obtain publicly available intelligence
 template: doc
 ---
+This pro
 In this post I'll be explaining my [day 2](https://adventofcode.com/2022/day/2)
 solution to [Advent of Code 2022](https://adventofcode.com/2022). First things first,
 lets read the input! Once again I'll be using the `readInput()`method provided in the 
