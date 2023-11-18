@@ -20,12 +20,15 @@ You can install `zsteg` from this link: https://github.com/zed-0xff/zsteg
 
 You just have to run the command:
 ```
-
+zsteg easy_version.png -b 1 -o yx -v
 ```
+
+The terminal output will be:
+![Easy_term_output](../../../assets/easy_term.png)
 
 The answer is therefore:
 ```
-0xCTF{Glad_you_remember_me}
+CTF{22s05a2005}
 ```
 
 ---
@@ -62,19 +65,51 @@ We were provided with the following image:
 ![easy_version](../../../assets/hard_version.png)
 
 ### Approach
-The approach is very straightaway in the beginning when you can directly use an [RSA cipher decoder](https://www.dcode.fr/rsa-cipher)
+After trying out a lot of zsteg based commands we were left with nothing useful, that could lead us to a flag.
 
-The decrypted value is:
-```
-531095210810895110
-```
-This is where we have to start thinking different. Here we can assume that the above value is a concatenation of the ASCII values of characters.
+Then we tried to analyse the bit planes of the image and found out some interesting data in the Red 0 bit plane:
+![hard_hidden](../../../assets/hard_hidden.png)
 
-```
-53 109 52 108 108 95 110 = 5m4ll_n
-```
+I then proceeded to open the bit plane image in gimp and started counting the dots as 1 and the blanks as 0.
+Soon I noticed that we were supposed to select only alternate bits and then started writing down the bits.
 
-So the answer is:
+I noticed that it looked like ASCII code and then used that realization to convert it to the flag.
+
+Later I noticed that I could have done this in python using the code written below:
 ```
-0xCTF{5m4ll_n}
+from PIL import Image
+
+def open_image(file_path):
+    return Image.open(file_path)
+
+    
+def get_pixel_values(image, row):
+    return [image.getpixel((x, row))[2] for x in range(image.width)]
+
+def extract_binary_data(pixel_values):
+    return ''.join(map(str, pixel_values))
+
+def decode_binary_string(binary_string):
+    return ''.join(chr(int(binary_string[i*8:i*8+8], 2)) for i in range(len(binary_string)//8))
+
+def main():
+    image_path = 'hard_version.png'
+    image = open_image(image_path)
+
+    row_to_extract = 0
+    pixel_values = get_pixel_values(image, row_to_extract)
+    binary_data = extract_binary_data(pixel_values)
+    res = ''.join(binary_data[x] for x in range(1, len(binary_data), 2))
+    decoded_message = decode_binary_string(res)
+
+    print(decoded_message)
+
+if __name__ == "__main__":
+    main()
+```
+You can also refer to: https://web.iiit.ac.in/~rinishsam.i/buzzoverflow-writeups/#/?id=pixelated-secrets-2 for his shorted and more elegant approach.
+
+The flag is:
+```
+CTF{S3cure_22}
 ```
