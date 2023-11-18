@@ -63,7 +63,7 @@ Now run the code, you will get the flag:
 --- 
 ## elfish
 
-You are provided with a binary file called 'elfish' that will not run on your pc. This is because the binary file is corrupted. When you try to analse the type of the file.
+You are provided with a binary file called 'elfish' that will not run on your pc. This is because the binary file is corrupted. When you try to analyze the type of the file.
 
 If you try to analyse the file headers using:
 ```
