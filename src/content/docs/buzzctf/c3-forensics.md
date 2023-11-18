@@ -76,7 +76,7 @@ Soon I noticed that we were supposed to select only alternate bits and then star
 I noticed that it looked like ASCII code and then used that realization to convert it to the flag.
 
 Later I noticed that I could have done this in python using the code written below:
-```
+```python
 from PIL import Image
 
 def open_image(file_path):
