@@ -4,18 +4,18 @@ import markdoc from '@astrojs/markdoc';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://the-coder-kishor.github.io',
-  base: '/buzzctf_writeup/',
+  site: 'https://github.com/CoconutPhishers',
+  base: '/buzzctf_writeup23/',
   integrations: [
     markdoc(),
     starlight({
       title: 'BuzzCTF',
       editLink: {
-        baseUrl: 'https://github.com/The-Coder-Kishor/buzzctf_writeup/edit/main/',
+        baseUrl: 'https://github.com/CoconutPhishers/buzzctf_writeup/edit/main/',
       },
       social: {
-        github: 'https://github.com/The-Coder-Kishor',
-        discord: 'https://discord.gg/sppgPuRVQV'
+        github: 'https://github.com/CoconutPhishers',
+        discord: 'https://discord.gg/4EpHk9KnJf'
       },
       sidebar: [
         {
